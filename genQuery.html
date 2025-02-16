@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Streaming Test</title>
+</head>
+<body>
+  <h1>Streaming Response:</h1>
+  <div id="response"></div>
+
+  <script>
+    async function fetchStream() {
+      const responseDiv = document.getElementById('response');
+      const response = await fetch('http://localhost:3000/generateQuery', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ prompt: 'top 5 products' })
+      });
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            break;
+          }
+          const text = decoder.decode(value);
+          responseDiv.innerHTML += text;
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    }
+
+    fetchStream();
+  </script>
+</body>
+</html>

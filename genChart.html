@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Chart Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+<body>
+    <h1>Generate EChart</h1>
+
+    <label for="userQuestion">User Question:</label><br>
+    <textarea id="userQuestion" name="userQuestion" rows="4" cols="50">What are the top selling products in the last month?</textarea><br><br>
+
+    <label for="generatedQuery">Generated Query:</label><br>
+    <textarea id="generatedQuery" name="generatedQuery" rows="4" cols="50">{
+  "size": 0,
+  "query": {
+    "range": {
+      "orderDate": {
+        "gte": "now-1M/M",
+        "lt": "now/M"
+      }
+    }
+  },
+  "aggs": {
+    "top_products": {
+      "terms": {
+        "field": "productName",
+        "size": 10
+      },
+      "aggs": {
+        "total_sales": {
+          "sum": {
+            "field": "price"
+          }
+        }
+      }
+    }
+  }
+}</textarea><br><br >
+
+    <label for="opensearchResponse">OpenSearch Response:</label><br>
+    <textarea id="opensearchResponse" name="opensearchResponse" rows="4" cols="50">{
+  "took": 2,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 1000,
+      "relation": "eq"
+    },
+    "max_score": null,
+    "hits": []
+  },
+  "aggregations": {
+    "top_products": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 990,
+      "buckets": [
+        {
+          "key": "Product A",
+          "doc_count": 5,
+          "total_sales": {
+            "value": 500
+          }
+        },
+        {
+          "key": "Product B",
+          "doc_count": 3,
+          "total_sales": {
+            "value": 300
+          }
+        },
+        {
+          "key": "Product C",
+          "doc_count": 2,
+          "total_sales": {
+            "value": 200
+          }
+        }
+      ]
+    }
+  }
+}</textarea><br><br >
+
+    <button onclick="generateChart()">Generate Chart</button><br><br>
+
+    <div id="chart" style="width: 600px;height:400px;"></div>
+    <div id="streamOutput"></div>
+
+    <script>
+        async function generateChart() {
+            const userQuestion = document.getElementById('userQuestion').value;
+            const generatedQuery = document.getElementById('generatedQuery').value;
+            const opensearchResponse = document.getElementById('opensearchResponse').value;
+            const chartDiv = document.getElementById('chart');
+            const streamOutputDiv = document.getElementById('streamOutput');
+
+            try {
+                streamOutputDiv.textContent = 'Generating chart...'; // Show loading message
+
+                const response = await fetch('http://localhost:3000/generateChart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userQuestion: userQuestion,
+                        GeneratedQuery: generatedQuery,
+                        opensearchResponse: opensearchResponse
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    streamOutputDiv.textContent = `Error: ${response.status} - ${errorText}`;
+                    return;
+                }
+
+                const chartJson = await response.json();
+                streamOutputDiv.textContent = 'Chart generated successfully!';
+
+                // Initialize ECharts
+                const myChart = echarts.init(chartDiv);
+
+                // Set the chart options
+                myChart.setOption(chartJson);
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                streamOutputDiv.textContent = 'Error fetching data: ' + error;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Report Test</title>
+</head>
+<body>
+    <h1>Generate Report</h1>
+
+    <label for="userQuestion">User Question:</label><br>
+    <textarea id="userQuestion" name="userQuestion" rows="4" cols="50">top 5 products</textarea><br><br>
+
+    <label for="generatedQuery">Generated Query:</label><br>
+    <textarea id="generatedQuery" name="generatedQuery" rows="4" cols="50">{"params":{"index":"v6q95r5n91_visualization","body":{"aggs":{"2":{"terms":{"field":"orderProduct.name.keyword","order":{"_count":"desc"},"size":5}}},"size":0,"stored_fields":["*"],"script_fields":{},"docvalue_fields":[{"field":"dateCreated","format":"date_time"},{"field":"dateShipped","format":"date_time"}],"_source":{"excludes":[]},"query":{"bool":{"must":[],"filter":[{"match_all":{}},{"range":{"dateCreated":{"gte":"2015-02-15T00:00:59.926Z","lte":"2025-02-12T00:00:59.926Z","format":"strict_date_optional_time"}}}]}}},"preference":1736347315027}}</textarea><br><br>
+
+    <label for="opensearchResponse">OpenSearch Response:</label><br>
+    <textarea id="opensearchResponse" name="opensearchResponse" rows="4" cols="50">{"isPartial":false,"isRunning":false,"rawResponse":{"took":79,"timed_out":false,"_shards":{"total":1,"successful":1,"skipped":0,"failed":0},"hits":{"total":83,"max_score":null,"hits":[]},"aggregations":{"2":{"doc_count_error_upper_bound":0,"sum_other_doc_count":10,"buckets":[{"key":"Universal FW & C2 Drinks Bottle Holder","doc_count":30},{"key":"Test Button","doc_count":23},{"key":"S1 DHC Electric Golf Trolley 2022 - Ultra Lithium","doc_count":11},{"key":"Timex TW7C05900 Youth Watch","doc_count":5},{"key":"Cannibal Analogue Watch Blue CD272-05","doc_count":4}]}}},"total":1,"loaded":1}</textarea><br><br>
+
+    <button onclick="generateReport()">Generate Report</button><br><br>
+
+    <div id="report"></div>
+
+    <script>
+        // Make generateReport globally accessible
+        window.generateReport = async function() {
+            const userQuestion = document.getElementById('userQuestion').value;
+            const generatedQuery = document.getElementById('generatedQuery').value;
+            const opensearchResponse = document.getElementById('opensearchResponse').value;
+            const reportDiv = document.getElementById('report');
+
+            try {
+                const response = await fetch('http://localhost:3000/generateReport', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userQuestion: userQuestion,
+                        GeneratedQuery: generatedQuery,
+                        opensearchResponse: opensearchResponse
+                    })
+                });
+
+                if (!response.body) {
+                    console.error('ReadableStream not supported on this browser');
+                    reportDiv.textContent = 'Streaming not supported. Please use a modern browser.';
+                    return;
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                reportDiv.innerHTML = ''; // Clear previous content
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        break;
+                    }
+                    const text = decoder.decode(value);
+                    reportDiv.innerHTML += text;
+                }
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                reportDiv.textContent = 'Error fetching data: ' + error;
+            }
+        }
+    </script>
+</body>
+</html>
