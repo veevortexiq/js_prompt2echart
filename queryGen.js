@@ -2,25 +2,27 @@ const {
     GoogleGenerativeAI,
     HarmCategory,
     HarmBlockThreshold,
-  } = require("@google/generative-ai");
-  const fs = require('fs').promises; // Import the fs.promises module
+} = require("@google/generative-ai");
+const fs = require('fs').promises;
+const mysql = require('mysql2/promise');
+require('dotenv').config();
 
-  const apiKey = "AIzaSyCpH5tVnakBLeeuvN3TBMJOQ3Zmw0bpnG0";
-  const genAI = new GoogleGenerativeAI(apiKey);
-  
-  const model = genAI.getGenerativeModel({
+const apiKey = process.env.GOOGLE_API_KEY;
+const genAI = new GoogleGenerativeAI(apiKey);
+
+const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
-  });
-  
-  const generationConfig = {
+});
+
+const generationConfig = {
     temperature: 1,
     topP: 0.95,
     topK: 40,
     maxOutputTokens: 8192,
     responseMimeType: "application/json",
-  };
-  
-  async function generateQuery(user_input) {
+};
+
+async function generateQuery(user_input) {
     // Load the JSON data from the file
     async function loadJsonData(filePath) {
         try {
@@ -37,8 +39,8 @@ const {
     if (!jsonData) {
         return Promise.reject("Failed to load queryDSL_data.json");
     }
-  
-    const prompt =  `
+
+    const prompt = `
  Generate Elasticsearch QueryDSL from Natural Language Requests
 Analyze patterns from historical examples to create new queries
 
@@ -83,12 +85,21 @@ Output Requirement
 Task : Generate Elastisearch QuerDSL for - ${user_input}
 `;
     const chatSession = model.startChat({
-      generationConfig,
-      history: [],
+        generationConfig,
+        history: [],
     });
-  
-    const result = await chatSession.sendMessageStream(prompt);
-    return result;
-  }
-  
-  module.exports = generateQuery;
+
+    try {
+        const result = await chatSession.sendMessageStream(prompt);
+       
+
+       
+        return result;
+        // The function itself doesn't return anything directly.  The stream is piped, and the DB insertion happens after the stream completes.
+    } catch (error) {
+        console.error('Error generating or saving report:', error);
+        throw error;
+    }
+}
+
+module.exports = generateQuery;
