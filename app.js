@@ -1,9 +1,9 @@
 const express = require('express');
-const generateQuery = require('./queryGen');
-const generateReport = require('./genReport')
-const generateChart = require('./genchart'); // Import the generateChart function
-const countTokens = require('./countTokens');
-const saveDataToDB = require('./saveToDB');
+const generateQuery = require('./generators/queryGen');
+const generateReport = require('./generators/genReport')
+const generateChart = require('./generators/genchart'); // Import the generateChart function
+const countTokens = require('./utils/countTokens');
+const saveDataToDB = require('./utils/saveToDB');
 
 const cors = require('cors'); // Import the cors middleware
 
