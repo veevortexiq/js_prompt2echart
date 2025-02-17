@@ -71,6 +71,43 @@ The `genChart.html` file allows you to test the chart generation endpoint. It se
 *   @google-cloud/aiplatform (if using Gemini API)
 *   echarts (for chart rendering in the browser)
 
+## Endpoints
+
+### generateQuery
+
+The `generateQuery` function is used to generate Elasticsearch QueryDSL from natural language requests. It takes two parameters:
+
+1. `user_input`: The user's natural language request.
+2. `index_name`: The name of the Elasticsearch index to target.
+
+The function returns a stream of text chunks, which together form the generated Elasticsearch QueryDSL.
+
+
+### generateReport
+
+The `generateReport` function is used to analyze a technical query/response pair and convert it into clear business insights. It takes three parameters:
+
+1. `userQuestion`: The user's original question.
+2. `GeneratedQuery`: The generated Elasticsearch QueryDSL.
+3. `opensearchResponse`: The response from OpenSearch.
+
+The function returns a stream of text chunks, which together form the generated report.
+
+
+
+
+
+### generateChart
+
+The `generateChart` function is used to generate a chart from a technical query/response pair. It takes three parameters:
+
+1. `userQuestion`: The user's original question.
+2. `GeneratedQuery`: The generated Elasticsearch QueryDSL.
+3. `opensearchResponse`: The response from OpenSearch.
+
+The function returns a JSON object representing the generated chart.
+
+
 ## Notes
 
 *   Make sure your Azure OpenAI Service and Google Cloud project are properly configured and that you have the necessary permissions to access the APIs.
