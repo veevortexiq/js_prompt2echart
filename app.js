@@ -6,9 +6,10 @@ const countTokens = require('./countTokens');
 const saveDataToDB = require('./saveToDB');
 
 const cors = require('cors'); // Import the cors middleware
-app.use(cors());// Enable CORS for all origins
+
 const app = express();
 const port = 3000;
+app.use(cors());// Enable CORS for all origins
 
 // Add middleware to parse JSON bodies
 app.use(express.json());
@@ -25,13 +26,14 @@ app.use((req, res, next) => {
 app.post('/generateQuery', async (req, res) => {
   console.log('Entering /generateQuery handler'); // Debugging log
   const prompt = req.body.prompt;
+  const index_name = req.body.index_name;
   if (!prompt) {
     return res.status(400).json({ error: 'Prompt is required' });
   }
   try {
     accumulated_text = ""
     console.log(`Token Count : ${countTokens(prompt)}`)
-    const stream = await generateQuery(prompt);
+    const stream = await generateQuery(prompt,index_name);
 
     // Set headers *before* starting to write to the response
     console.log('Setting headers...'); // Debugging log

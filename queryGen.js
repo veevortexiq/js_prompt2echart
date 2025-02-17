@@ -22,7 +22,7 @@ const generationConfig = {
     responseMimeType: "application/json",
 };
 
-async function generateQuery(user_input) {
+async function generateQuery(user_input, index_name) {
     // Load the JSON data from the file
     async function loadJsonData(filePath) {
         try {
@@ -83,6 +83,7 @@ Output Requirement
     - no headers or footers of any kind
 
 Task : Generate Elastisearch QuerDSL for - ${user_input}
+Index to Target - ${index_name}
 `;
     const chatSession = model.startChat({
         generationConfig,
